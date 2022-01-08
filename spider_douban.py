@@ -3,6 +3,8 @@
 from bs4 import BeautifulSoup
 import re
 import urllib.request
+import xlwt
+
 
 findNum = re.compile(r'<em class="">(.*)</em>')
 findLink = re.compile(r'<a href="(.*)">')
@@ -38,16 +40,40 @@ def getContent():
             bd = re.sub(r'\n', '', bd)
             bd = re.sub(r'\s+?', '', bd)
             rating = re.findall(findRating, item)[0]
-            inq = re.findall(findInq, item)[0]
+            inqList = re.findall(findInq, item)
+            if(inqList and len(inqList)>0):
+                inq = inqList[0]
 
             contentList.append({'num': num, 'link': link, 'pic':pic, 'title': title, 'bd': bd, 'rating': rating, 'inq': inq})
 
-        return contentList
+    return contentList
+
+
+def saveToExcel(contentList, name):
+    book = xlwt.Workbook(encoding='utf-8', style_compression=0)
+    sheet = book.add_sheet('豆瓣电影')
+    col = ('编号', '电影名称', '链接', '图片链接', '概况', '评分', '相关信息')
+    for i in range(len(col)):
+        sheet.write(0, i, col[i])
+
+    for j in range(len(contentList)):
+        print('保存第%d条' %(j+1))
+        sheet.write(j+1, 0, contentList[j]['num'])
+        sheet.write(j+1, 1, contentList[j]['title'])
+        sheet.write(j+1, 2, contentList[j]['link'])
+        sheet.write(j+1, 3, contentList[j]['pic'])
+        sheet.write(j+1, 4, contentList[j]['bd'])
+        sheet.write(j+1, 5, contentList[j]['rating'])
+        sheet.write(j+1, 6, contentList[j]['inq'])
+
+    book.save(name)
+
+
+
 
 def main():
     contentList = getContent()
-    for content in contentList:
-        print(content)
+    saveToExcel(contentList, "豆瓣电影.xls")
 
 
 if __name__ == "__main__":
